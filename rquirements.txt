@@ -1,9 +1,9 @@
-streamlit
-pandas
-requests
 fpdf
+pandas
+streamlit
+requests
 Pillow
-ics
 matplotlib
 qrcode
+ics
 pdf2image
