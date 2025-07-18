@@ -1,4 +1,5 @@
-# Beginner Gardener AI – Part 1: Imports, Data, Config
+# Beginner Gardener AI – Full Corrected Version
+# Streamlit deployment-ready app.py
 
 import streamlit as st
 import pandas as pd
@@ -21,15 +22,16 @@ usda_zone_by_zip = {
     "76101": "8a"
 }
 
-# Example spacing and containers
-tomato_spacing = "18–24 inches"
-spinach_spacing = "4–6 inches"
-container_guide = {
-    "Tomato": "5-gallon pot",
-    "Spinach": "6-inch pot"
+spacing_guide = {
+    "Early Girl": "18–24 inches",
+    "Bloomsdale Spinach": "4–6 inches"
 }
 
-# Example variety guide
+container_guide = {
+    "Early Girl": "5-gallon pot",
+    "Bloomsdale Spinach": "6-inch pot"
+}
+
 variety_guide = {
     "Tomatoes": {
         "Spring": [
@@ -53,19 +55,28 @@ companion_guide = {
     "Bloomsdale Spinach": ["Radish"]
 }
 
-spacing_guide = {
-    "Early Girl": tomato_spacing,
-    "Bloomsdale Spinach": spinach_spacing
-}
-
-# Frost estimation (simplified)
 def get_estimated_last_frost(zip_code):
-    try:
-        return datetime(datetime.today().year, 3, 15)
-    except:
-        return datetime(datetime.today().year, 3, 15)
+    return datetime(datetime.today().year, 3, 15)
 
-# PDF Export
+def export_task_ical(start_date, zip_code):
+    cal = Calendar()
+    task_offset = 0
+    for cat in variety_guide.values():
+        for stage in cat.values():
+            for v in stage:
+                for task in v.get("tasks", []):
+                    e = Event()
+                    e.name = f"{v['name']} – {task}"
+                    e.begin = start_date + timedelta(days=task_offset)
+                    cal.events.add(e)
+                    task_offset += 2
+                for r in v.get("recurring", []):
+                    for i in range(6):
+                        recur = Event()
+                        recur.name = f"{v['name']} – {r}"
+                        recur.begin = start_date + timedelta(days=task_offset + i*7)
+                        cal.events.add(recur)
+    return str(cal)
 
 def export_pdf(layout_df, ical_url):
     pdf = FPDF()
@@ -97,30 +108,6 @@ def export_pdf(layout_df, ical_url):
     pdf.set_font("Arial", size=8)
     pdf.cell(0, 10, f"Generated {datetime.today().strftime('%Y-%m-%d')}", align="C")
     return pdf.output(dest='S').encode('latin1')
-
-# iCal Export
-
-def export_task_ical(start_date, zip_code):
-    cal = Calendar()
-    task_offset = 0
-    for cat in variety_guide.values():
-        for stage in cat.values():
-            for v in stage:
-                for task in v.get("tasks", []):
-                    e = Event()
-                    e.name = f"{v['name']} – {task}"
-                    e.begin = start_date + timedelta(days=task_offset)
-                    cal.events.add(e)
-                    task_offset += 2
-                for r in v.get("recurring", []):
-                    for i in range(6):
-                        recur = Event()
-                        recur.name = f"{v['name']} – {r}"
-                        recur.begin = start_date + timedelta(days=task_offset + i*7)
-                        cal.events.add(recur)
-    return str(cal)
-
-# STREAMLIT APP START
 
 st.set_page_config(page_title="Beginner Gardener AI", layout="wide")
 st.title("🌿 Beginner Gardener AI")
@@ -170,7 +157,6 @@ if st.button("🧹 Clear Layout"):
 bed_df = pd.DataFrame(st.session_state.bed_layout)
 st.dataframe(bed_df)
 
-# EXPORTS
 ical_data = export_task_ical(custom_start, zip_input)
 st.download_button("📅 Download iCal", data=ical_data, file_name="gardening_tasks.ics")
 
@@ -182,7 +168,6 @@ with st.expander("🔍 Preview PDF"):
 
 st.download_button("📄 Download PDF", data=pdf_data, file_name="garden_layout.pdf", mime="application/pdf")
 
-# PNG IMAGE of layout
 fig, ax = plt.subplots(figsize=(layout_cols, layout_rows))
 ax.set_xlim(0, layout_cols)
 ax.set_ylim(0, layout_rows)
