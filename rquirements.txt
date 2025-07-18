@@ -1,0 +1,9 @@
+streamlit
+pandas
+requests
+fpdf
+Pillow
+ics
+matplotlib
+qrcode
+pdf2image
