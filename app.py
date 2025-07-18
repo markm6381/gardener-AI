@@ -176,7 +176,7 @@ selected_details = next((v for cat in variety_guide.values() for stage in cat.va
 if selected_details:
     st.image(selected_details["image"], width=150)
     spacing = spacing_guide.get(selected_crop, "Spacing info not available")
-    st.markdown(f"📏 **Recommended Spacing:** {spacing}") for stage in cat.values() for v in stage])
+    st.markdown(f"📏 **Recommended Spacing:** {spacing}")
 
 if "bed_layout" not in st.session_state:
     st.session_state.bed_layout = [["" for _ in range(layout_cols)] for _ in range(layout_rows)]
