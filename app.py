@@ -7,7 +7,7 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf import FPDF
+from fpdf import FPDF  # Ensure using fpdf2 in requirements.txt (fpdf2==2.7.6)
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
