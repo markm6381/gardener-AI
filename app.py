@@ -7,7 +7,7 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf import FPDF # Updated import to match fpdf2
+from fpdf import FPDF  # Reverted import to match fpdf2 module structure
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
@@ -185,3 +185,4 @@ buffer = io.BytesIO()
 plt.savefig(buffer, format='png')
 buffer.seek(0)
 st.download_button("🖼️ Download PNG", data=buffer, file_name="bed_layout.png", mime="image/png")
+
