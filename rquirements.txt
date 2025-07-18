@@ -7,3 +7,4 @@ ics
 matplotlib
 qrcode
 pdf2image
+
