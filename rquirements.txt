@@ -2,7 +2,8 @@ streamlit
 pandas
 requests
 Pillow
+fpdf==1.7.2
+ics
 matplotlib
 qrcode
-ics
 pdf2image
