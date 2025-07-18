@@ -7,7 +7,7 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf2 import FPDF  # Updated import to match fpdf2
+from fpdf import FPDF # Updated import to match fpdf2
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
