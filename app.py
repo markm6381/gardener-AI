@@ -1,4 +1,3 @@
-
 # Beginner Gardener AI – Fully Rebuilt and Deployable on Streamlit Cloud
 
 import streamlit as st
@@ -90,26 +89,8 @@ for crop_group, stages in variety_guide.items():
                 if level_filter != "All" and v.get("level") != level_filter:
                     continue
 
-                with st.expander(v["name"]):
-                    st.image(v["image"], width=100)
-                    st.markdown(f"**Experience Level:** {v['level']}")
-                    st.markdown(f"**Organic:** {'Yes' if v['organic'] else 'No'}")
-                    st.markdown("**Tasks:**")
-                    for t in v.get("tasks", []):
-                        st.markdown(f"- {t}")
-                    st.markdown("**Recurring Care:**")
-                    for r in v.get("recurring", []):
-                        st.markdown(f"♻️ {r}")
-    with st.expander(v["name"]):
-                    st.image(v["image"], width=100)
-                    st.markdown(f"**Experience Level:** {v['level']}")
-                    st.markdown(f"**Organic:** {'Yes' if v['organic'] else 'No'}")
-                    st.markdown("**Tasks:**")
-                    for t in v.get("tasks", []):
-                        st.markdown(f"- {t}")
-                    st.markdown("**Recurring Care:**")
-                    for r in v.get("recurring", []):
-                        st.markdown(f"♻️ {r}")
+            
+    
 
 # Container crops
 st.subheader("🪴 Container Gardening")
