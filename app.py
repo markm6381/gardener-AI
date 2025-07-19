@@ -6,7 +6,7 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf import FPDF
+from fpdf import FPDF  # Ensure this matches fpdf2==2.7.6 in requirements.txt
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
