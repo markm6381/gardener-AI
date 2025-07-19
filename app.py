@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from PIL import Image
 import io
 # (PDF export removed to prevent import error)
-from ics import Calendar, Event
+# Calendar export disabled due to import errors on Streamlit Cloud
 import matplotlib.pyplot as plt
 import qrcode
 from pdf2image import convert_from_bytes
@@ -105,17 +105,7 @@ if selected_container:
                     st.markdown(f"🔗 [Seed Source]({v['link']})")
 
 # Calendar and Export Buttons
-ical_data = Calendar()
-for cat in variety_guide.values():
-    for stage in cat.values():
-        for v in stage:
-            for task in v.get("tasks", []):
-                e = Event()
-                e.name = f"{v['name']} – {task}"
-                e.begin = datetime.today() + timedelta(days=1)
-                ical_data.events.add(e)
-ical_str = str(ical_data)
-st.download_button("📅 Download Calendar (.ics)", data=ical_str, file_name="garden_schedule.ics")
+st.markdown("📅 Calendar export is currently disabled due to library issues.")
 
 
 # Part 4: Seasonal Display and README Guidance
