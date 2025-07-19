@@ -1,5 +1,4 @@
-# Beginner Gardener AI – Full Corrected Version
-# Streamlit deployment-ready app.py
+# Beginner Gardener AI – Reconstructed from Scratch (Part 1 of 4)
 
 import streamlit as st
 import pandas as pd
@@ -7,60 +6,68 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf2 import FPDF
+from fpdf import FPDF
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
 from pdf2image import convert_from_bytes
 
-# USDA zone lookup (simplified)
-usda_zone_by_zip = {
-    "77001": "9a",
-    "78701": "8b",
-    "75201": "8a",
-    "79901": "8a",
-    "76101": "8a"
-}
-
-# --- FULL BEGINNER GARDENER AI APP RESTORED ---
-
-# Streamlit app configuration
 st.set_page_config(page_title="Beginner Gardener AI", layout="wide")
 st.title("🌿 Beginner Gardener AI Planner")
 
-# Input ZIP code and frost-aware calendar start date
-zip_input = st.text_input("Enter ZIP code:", "77001")
-custom_start = st.date_input("Select calendar start date:", datetime.today())
-frost_estimate = get_estimated_last_frost(zip_input)
-if custom_start < frost_estimate:
-    st.warning("Selected date is before last frost. Adjusting...")
-    custom_start = frost_estimate + timedelta(days=1)
+# Sample spacing and companion guide
+def get_spacing():
+    return {
+        "Tomato": "18–24 in",
+        "Spinach": "6 in",
+        "Okra": "12–18 in"
+    }
 
-st.markdown(f"**Estimated Last Frost:** {frost_estimate.strftime('%B %d, %Y')}")
+def get_companions():
+    return {
+        "Tomato": ["Basil", "Marigold"],
+        "Spinach": ["Radish"],
+        "Okra": ["Peppers"]
+    }
 
-# Container Gardening Section
-st.subheader("🪴 Container Gardening")
-selected_container = st.selectbox("Choose container crop:", [v["name"] for cat in variety_guide.values() for stage in cat.values() for v in stage])
-for cat in variety_guide.values():
-    for stage in cat.values():
-        for v in stage:
-            if v["name"] == selected_container:
-                st.image(v["image"], width=100)
-                st.markdown(f"**Spacing:** {spacing_guide.get(v['name'], 'N/A')}")
-                st.markdown("**Tasks:**")
-                for t in v.get("tasks", []):
-                    st.markdown(f"- {t}")
-                for r in v.get("recurring", []):
-                    st.markdown(f"♻️ {r}")
-                st.markdown(f"🔗 [Seed Source]({v['link']})")
+# USDA zip to frost estimate
+def get_estimated_last_frost(zip_code):
+    return datetime(datetime.today().year, 3, 15)
 
-# Raised Bed Layout Planner
-st.subheader("🧱 Raised Bed Planner")
+spacing_guide = get_spacing()
+companion_guide = get_companions()
+
+# Part 2: Crop Data and Layout Planner
+
+container_guide = {
+    "Tomato": "5-gallon pot",
+    "Spinach": "6-inch pot",
+    "Okra": "5-gallon pot"
+}
+
+variety_guide = {
+    "Warm-Season": {
+        "Summer": [
+            {"name": "Tomato", "link": "https://example.com/tomato", "image": "https://via.placeholder.com/100", "level": "Beginner", "organic": True,
+             "tasks": ["Start seeds indoors in Jan", "Transplant after frost"], "recurring": ["Fertilize every 2 weeks"]},
+            {"name": "Okra", "link": "https://example.com/okra", "image": "https://via.placeholder.com/100", "level": "Beginner", "organic": False,
+             "tasks": ["Direct sow after frost"], "recurring": ["Harvest every 2–3 days"]}
+        ]
+    },
+    "Cold-Tolerant": {
+        "Early": [
+            {"name": "Spinach", "link": "https://example.com/spinach", "image": "https://via.placeholder.com/100", "level": "Beginner", "organic": True,
+             "tasks": ["Direct sow in cool soil"], "recurring": ["Water every 3 days"]}
+        ]
+    }
+}
+
 layout_rows, layout_cols = 4, 6
 if "bed_layout" not in st.session_state:
     st.session_state.bed_layout = [["" for _ in range(layout_cols)] for _ in range(layout_rows)]
 
-selected_crop = st.selectbox("Select a crop to place in the garden bed:", [v["name"] for cat in variety_guide.values() for stage in cat.values() for v in stage])
+selected_crop = st.selectbox("Select a crop to place:", [v["name"] for cat in variety_guide.values() for stage in cat.values() for v in stage])
+
 for i in range(layout_rows):
     cols = st.columns(layout_cols)
     for j in range(layout_cols):
@@ -74,19 +81,88 @@ if st.button("🧹 Clear Layout"):
 bed_df = pd.DataFrame(st.session_state.bed_layout)
 st.dataframe(bed_df)
 
-# iCal and PDF Export
-ical_data = export_task_ical(custom_start, zip_input)
-st.download_button("📅 Download iCal", data=ical_data, file_name="gardening_tasks.ics")
+# Container Gardening Display
+st.subheader("🪴 Container Gardening")
+selected_container = st.selectbox("Choose a container crop:", list(container_guide.keys()))
+if selected_container:
+    spacing = spacing_guide.get(selected_container, "N/A")
+    container_size = container_guide.get(selected_container, "N/A")
+    companions = companion_guide.get(selected_container, [])
+    st.markdown(f"📦 **Recommended Container Size:** {container_size}")
+    st.markdown(f"📏 **Spacing:** {spacing}")
+    st.markdown(f"🌼 **Companion Plants:** {', '.join(companions)}")
+    for cat in variety_guide.values():
+        for stage in cat.values():
+            for v in stage:
+                if v["name"] == selected_container:
+                    st.image(v["image"], width=100)
+                    st.markdown("**Tasks:**")
+                    for task in v.get("tasks", []):
+                        st.markdown(f"- {task}")
+                    st.markdown("**Recurring Care:**")
+                    for care in v.get("recurring", []):
+                        st.markdown(f"♻️ {care}")
+                    st.markdown(f"🔗 [Seed Source]({v['link']})")
 
-pdf_data = export_pdf(bed_df, "https://example.com/gardening_tasks.ics")
-with st.expander("🔍 Preview PDF"):
-    preview_images = convert_from_bytes(pdf_data)
-    for img in preview_images:
-        st.image(img, caption="Layout Preview", use_column_width=True)
+# Calendar and Export Buttons
+ical_data = Calendar()
+for cat in variety_guide.values():
+    for stage in cat.values():
+        for v in stage:
+            for task in v.get("tasks", []):
+                e = Event()
+                e.name = f"{v['name']} – {task}"
+                e.begin = datetime.today() + timedelta(days=1)
+                ical_data.events.add(e)
+ical_str = str(ical_data)
+st.download_button("📅 Download Calendar (.ics)", data=ical_str, file_name="garden_schedule.ics")
 
-st.download_button("📄 Download PDF", data=pdf_data, file_name="garden_layout.pdf", mime="application/pdf")
+# PDF Export
+class GardenPDF(FPDF):
+    def header(self):
+        self.set_font("Arial", 'B', 12)
+        self.cell(0, 10, "Garden Layout Summary", ln=True, align="C")
 
-# PNG Grid Export
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", 'I', 8)
+        self.cell(0, 10, f"Generated {datetime.today().strftime('%Y-%m-%d')}", 0, 0, 'C')
+
+pdf = GardenPDF()
+pdf.add_page()
+pdf.set_font("Arial", size=10)
+for i, row in bed_df.iterrows():
+    text = ' | '.join([cell if cell else "[Empty]" for cell in row])
+    pdf.multi_cell(0, 8, txt=text)
+pdf_bytes = pdf.output(dest='S').encode('latin1')
+st.download_button("📄 Download Garden PDF", data=pdf_bytes, file_name="bed_layout.pdf", mime="application/pdf")
+
+# Part 4: Seasonal Display and README Guidance
+
+# Seasonal variety display
+st.subheader("🌱 Crop Preview by Season")
+current_month = datetime.today().month
+season = "Spring" if current_month in [1, 2, 3, 4, 5] else "Summer" if current_month in [6, 7, 8] else "Fall"
+
+for crop_group, stages in variety_guide.items():
+    for stage, crops in stages.items():
+        if (season.lower() in stage.lower()) or (crop_group == "Cold-Tolerant" and season == "Spring"):
+            st.markdown(f"### {crop_group} – {stage}")
+            for v in crops:
+                with st.expander(v["name"]):
+                    st.image(v["image"], width=100)
+                    st.markdown(f"**Experience Level:** {v['level']}")
+                    st.markdown(f"**Organic:** {'Yes' if v['organic'] else 'No'}")
+                    st.markdown("**Tasks:**")
+                    for t in v.get("tasks", []):
+                        st.markdown(f"- {t}")
+                    st.markdown("**Recurring Care:**")
+                    for r in v.get("recurring", []):
+                        st.markdown(f"♻️ {r}")
+                    st.markdown(f"🔗 [Seed Link]({v['link']})")
+
+# Final tip
+st.info("✅ You’ve reached the end of the planner. Be sure to download your layout and calendar before exiting!")
 fig, ax = plt.subplots(figsize=(layout_cols, layout_rows))
 ax.set_xlim(0, layout_cols)
 ax.set_ylim(0, layout_rows)
@@ -96,101 +172,13 @@ ax.grid(True)
 ax.invert_yaxis()
 for i in range(layout_rows):
     for j in range(layout_cols):
-        crop = st.session_state.bed_layout[i][j]
-        if crop:
-            ax.text(j+0.5, i+0.5, crop[:10], ha='center', va='center', fontsize=6)
+        label = st.session_state.bed_layout[i][j]
+        if label:
+            ax.text(j+0.5, i+0.5, label[:10], ha='center', va='center', fontsize=6)
 plt.tight_layout()
-buffer = io.BytesIO()
-plt.savefig(buffer, format='png')
-buffer.seek(0)
-st.download_button("🖼️ Download PNG", data=buffer, file_name="bed_layout.png", mime="image/png")
+img_buf = io.BytesIO()
+plt.savefig(img_buf, format='png')
+img_buf.seek(0)
+st.download_button("🖼️ Download Garden Layout (PNG)", data=img_buf, file_name="layout.png", mime="image/png")
 
-# Container and spacing info
-spacing_guide = {
-    "Early Girl": "18–24 inches",
-    "Bloomsdale Spinach": "4–6 inches"
-}
-
-container_guide = {
-    "Early Girl": "5-gallon container",
-    "Bloomsdale Spinach": "6-inch pot"
-}
-
-# Variety Guide
-variety_guide = {
-    "Tomatoes": {
-        "Spring": [
-            {"name": "Early Girl", "level": "Beginner", "link": "https://burpee.com", "organic": True,
-             "image": "https://images.burpee.com/is/image/Burpee/early-girl-tomato?wid=150",
-             "tasks": ["Start indoors in January", "Transplant after frost"],
-             "recurring": ["Fertilize every 2 weeks"]}
-        ]
-    },
-    "Cold-Tolerant": {
-        "Early": [
-            {"name": "Bloomsdale Spinach", "level": "Beginner", "link": "https://edenbrothers.com",
-             "organic": True, "image": "https://www.edenbrothers.com/store/media/Seeds/Spinach/Spinach_Bloomsdale_LS.jpg",
-             "tasks": ["Direct sow before last frost"], "recurring": ["Water every 3 days"]}
-        ]
-    }
-}
-
-companion_guide = {
-    "Early Girl": ["Basil", "Marigold"],
-    "Bloomsdale Spinach": ["Radish"]
-}
-
-def get_estimated_last_frost(zip_code):
-    return datetime(datetime.today().year, 3, 15)
-
-def export_task_ical(start_date, zip_code):
-    cal = Calendar()
-    task_offset = 0
-    for cat in variety_guide.values():
-        for stage in cat.values():
-            for v in stage:
-                for task in v.get("tasks", []):
-                    e = Event()
-                    e.name = f"{v['name']} – {task}"
-                    e.begin = start_date + timedelta(days=task_offset)
-                    cal.events.add(e)
-                    task_offset += 2
-                for r in v.get("recurring", []):
-                    for i in range(6):
-                        recur = Event()
-                        recur.name = f"{v['name']} – {r}"
-                        recur.begin = start_date + timedelta(days=task_offset + i*7)
-                        cal.events.add(recur)
-    return str(cal)
-
-def export_pdf(layout_df, ical_url):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=10)
-    pdf.cell(200, 10, txt="Garden Bed Layout", ln=True, align="C")
-    for i, row in layout_df.iterrows():
-        row_line = ' | '.join([cell if cell else "[Empty]" for cell in row])
-        pdf.multi_cell(0, 8, txt=row_line)
-        for cell in row:
-            if cell:
-                pdf.multi_cell(0, 6, txt=f"🌱 {cell}")
-                for cat in variety_guide.values():
-                    for stage in cat.values():
-                        for v in stage:
-                            if v['name'] == cell:
-                                for t in v.get("tasks", [])[:2]:
-                                    pdf.multi_cell(0, 6, txt=f"• {t}")
-                                for r in v.get("recurring", [])[:1]:
-                                    pdf.multi_cell(0, 6, txt=f"⟳ {r}")
-                if cell in companion_guide:
-                    pdf.multi_cell(0, 6, txt=f"🌼 Companion: {', '.join(companion_guide[cell])}")
-    qr = qrcode.make(ical_url)
-    buf = io.BytesIO()
-    qr.save(buf)
-    buf.seek(0)
-    pdf.image(buf, x=80, w=50)
-    pdf.set_y(-20)
-    pdf.set_font("Arial", size=8)
-    pdf.cell(0, 10, f"Generated {datetime.today().strftime('%Y-%m-%d')}", align="C")
-    return pdf.output(dest='S').encode('latin1')
 
