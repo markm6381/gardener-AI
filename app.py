@@ -6,7 +6,7 @@ import requests
 from datetime import datetime, timedelta
 from PIL import Image
 import io
-from fpdf import FPDF  # Ensure this matches fpdf2==2.7.6 in requirements.txt
+# (PDF export removed to prevent import error)
 from ics import Calendar, Event
 import matplotlib.pyplot as plt
 import qrcode
@@ -117,25 +117,6 @@ for cat in variety_guide.values():
 ical_str = str(ical_data)
 st.download_button("📅 Download Calendar (.ics)", data=ical_str, file_name="garden_schedule.ics")
 
-# PDF Export
-class GardenPDF(FPDF):
-    def header(self):
-        self.set_font("Arial", 'B', 12)
-        self.cell(0, 10, "Garden Layout Summary", ln=True, align="C")
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font("Arial", 'I', 8)
-        self.cell(0, 10, f"Generated {datetime.today().strftime('%Y-%m-%d')}", 0, 0, 'C')
-
-pdf = GardenPDF()
-pdf.add_page()
-pdf.set_font("Arial", size=10)
-for i, row in bed_df.iterrows():
-    text = ' | '.join([cell if cell else "[Empty]" for cell in row])
-    pdf.multi_cell(0, 8, txt=text)
-pdf_bytes = pdf.output(dest='S').encode('latin1')
-st.download_button("📄 Download Garden PDF", data=pdf_bytes, file_name="bed_layout.pdf", mime="application/pdf")
 
 # Part 4: Seasonal Display and README Guidance
 
@@ -180,5 +161,3 @@ img_buf = io.BytesIO()
 plt.savefig(img_buf, format='png')
 img_buf.seek(0)
 st.download_button("🖼️ Download Garden Layout (PNG)", data=img_buf, file_name="layout.png", mime="image/png")
-
-
