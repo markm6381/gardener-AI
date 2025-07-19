@@ -2,7 +2,7 @@ streamlit
 pandas
 requests
 Pillow
-fpdf==1.7.2
+fpdf2==2.7.6
 ics
 matplotlib
 qrcode
